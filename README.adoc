@@ -1,0 +1,39 @@
+== GrapheneOS
+
+This is a GrapheneOS build script with patches that are important for me.
+
+Those patches only include KernelSU-Next/susfs for now, I need them to run my own
+nix-on-magisk (nixisk) module and couple of other modules, e.g NFS and Netbird with kernel wireguard.
+
+I do not consider KernelSU a security threat, as it is still more secure than old su implementations,
+and I use AVB to protect myself from other threats. I don't, however, consider it a hard requirement,
+if I manage to integrate nix package manager itself in grapheneos/develop a more lightweight solution
+for this task, I might instead just enable root in adb and replace KernelSU with a couple of system
+services.
+
+This source code tree contains everything I need for the build, with the exception that kernel
+tree is currently using a forked kernel instead of applying patches during build. Keys are stored
+here too, but they are encrypted using long password. If you want to build your own system based on
+this source code tree - consider regenerating them, I don't want to maintain a set of public keys.
+
+The current CI infrastructure is just one machine that runs all the scripts here, pushing the finished
+images to machine which distributes the build images to private CDN. The directories that are preserved between rebuilds are:
+
+- kernel/.git is cached to avoid constant refetches
+- kernel/.kbuildnumber-last is cached to make build number increasing between rebuilds
+- os-$OS_VER/.repo is cached to avoid overloading GrapheneOS git servers
+- .buildnumbers keeps the system build numbers for working OTA/incremental updates
+
+=== Scripts
+
+00-os_sync_sources.sh:: Fetch the grapheneos platform manifest and all the repositories, update vendor images from google
+00-kernel_sync_sources.sh:: Non-existant, TODO
+01-build_kernel.sh:: Build the pixel kernel
+01-os_reset_build_date_number.sh:: Up the version numbers, ensure that there is no stale build artifacts for the system (Those should never exist in CI, but I might have them for development builds)
+02-build_os.sh:: Ensure system patches are applied, copy kernel build artifacts, build the system OTA and optionally the incremental updates, upload them to the releases server.
+
+To build the system, they all should be ran sequentially, but some steps might be skipped/repeated for the development purposes. There is no safe sequence of minimal rebuild steps, because Soong build system incremental rebuilds are far from perfect.
+
+All the scripts are being run in distrobox, because I don't want any primary system changes to affect that, and it is not really feasible to use docker directly for that (I don't want to install build dependencies in docker container).
+
+The factory images are not published anywhere right now, they are too large for my needs.
