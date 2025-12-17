@@ -2,4 +2,4 @@
 /kernel
 /releases
 /.direnv
-/.common.sh
+/.env

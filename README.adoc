@@ -5,6 +5,8 @@ This is a GrapheneOS build script with patches that are important for me.
 Those patches only include KernelSU-Next/susfs for now, I need them to run my own
 nix-on-magisk (nixisk) module and couple of other modules, e.g NFS and Netbird with kernel wireguard.
 
+Edit: I dropped susfs, because I don't need it.
+
 I do not consider KernelSU a security threat, as it is still more secure than old su implementations,
 and I use AVB to protect myself from other threats. I don't, however, consider it a hard requirement,
 if I manage to integrate nix package manager itself in grapheneos/develop a more lightweight solution

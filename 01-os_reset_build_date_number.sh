@@ -19,10 +19,14 @@ mkdir -p kernel
 mkdir -p os-$OS_VER
 
 pushd os-$OS_VER
-echo "Cleaning out directory for the new release"
-rm -rf out/
-echo "Writing new version numbers"
-mkdir -p out/soong
-echo "$BUILD_DATETIME" >out/build_date.txt
-echo "$BUILD_NUMBER" >out/soong/build_number.txt
+{
+
+	echo "Cleaning out directory for the new release"
+	rm -rf out/
+	echo "Writing new version numbers"
+	mkdir -p out/soong
+	echo "$BUILD_DATETIME" >out/build_date.txt
+	echo "$BUILD_NUMBER" >out/soong/build_number.txt
+
+}
 popd

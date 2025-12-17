@@ -11,23 +11,49 @@ echo "$BUILD_NUMBER" >".buildnumbers/kernel"
 PATCHES=$PWD/patches
 EXTRAS=$PWD/extras
 
-pushd kernel
+pushd "$EXTRAS/KernelSU-Next"
+{
 
-git reset --hard
-git apply "$PATCHES/kernel/"*.patch
+	# I haven't debugged why their git code doesn't work with kleaf.
+	# Doesn't matter, this thing ensures the values are correct before building the kernel.
+	KSU_GIT_VERSION=$(git rev-list --count HEAD)
+	KSU_GIT_TAG=$(git describe --tags --abbrev=0)
 
-pushd aosp
-
-git reset --hard
-git apply "$PATCHES/kernel/aosp/"*.patch
-ln -sf "$EXTRAS/KernelSU-Next" ./
-ln -sf "$EXTRAS/susfs4ksu" ./
-
+	START="# PROVIDED VERSION START"
+	END="# PROVIDED VERSION END"
+	sed -i "/${START}/,/${END}/d" kernel/Kbuild
+	{
+		echo "$START"
+		echo "KSU_GIT_VERSION := $KSU_GIT_VERSION"
+		echo "KSU_GIT_TAG := $KSU_GIT_TAG"
+		echo "KSU_GIT_VERSION_VALID := 1"
+		echo "$END"
+		cat "kernel/Kbuild"
+	} >kernel/Kbuild.tmp
+	mv kernel/Kbuild.tmp kernel/Kbuild
+}
 popd
 
+pushd kernel
+{
 
-KSU_REVCOUNT=$(cd aosp/KernelSU-Next && git rev-list --count HEAD)
-[ "${KSU_REVCOUNT}" -ne 0 ] || echo "KernelSU-Next clone is broken, unable to get rev-list"
-sed -i "s/^KSU_GIT_VERSION := .*/KSU_GIT_VERSION := $KSU_REVCOUNT/" aosp/KernelSU-Next/kernel/Makefile
+	git reset --hard
+	git clean -f
+	git apply "$PATCHES/kernel/"*.patch
 
-BUILD_AOSP_KERNEL=1 KLEAF_REPO_MANIFEST=aosp_manifest.xml "./build_$DEVICE.sh" --lto=full --repo_manifest="$PWD:$PWD/aosp_manifest.xml"
+	pushd aosp
+	{
+
+		git reset --hard
+		git clean -f
+		git apply "$PATCHES/kernel/aosp/"*.patch
+		ln -sf "$EXTRAS/KernelSU-Next" ./
+		ln -sf "$EXTRAS/susfs4ksu" ./
+
+	}
+	popd
+
+	BUILD_AOSP_KERNEL=1 KLEAF_REPO_MANIFEST=aosp_manifest.xml "./build_$DEVICE.sh" --lto=full --repo_manifest="$PWD:$PWD/aosp_manifest.xml"
+
+}
+popd
