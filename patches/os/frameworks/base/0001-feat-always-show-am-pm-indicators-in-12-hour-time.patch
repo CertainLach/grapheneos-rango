@@ -1,0 +1,83 @@
+diff --git a/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/AnimatableClockView.kt b/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/AnimatableClockView.kt
+index f668b2486a5c..d447d2a4820b 100644
+--- a/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/AnimatableClockView.kt
++++ b/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/AnimatableClockView.kt
+@@ -628,14 +628,7 @@ constructor(
+                 return
+             }
+ 
+-            sClockView12 =
+-                DateFormat.getBestDateTimePattern(locale, clockView12Skel).let {
+-                    // CLDR insists on adding an AM/PM indicator even though it wasn't in the format
+-                    // string. The following code removes the AM/PM indicator if we didn't want it.
+-                    if (!clockView12Skel.contains("a")) {
+-                        it.replace("a".toRegex(), "").trim { it <= ' ' }
+-                    } else it
+-                }
++            sClockView12 = DateFormat.getBestDateTimePattern(locale, clockView12Skel)
+ 
+             sClockView24 = DateFormat.getBestDateTimePattern(locale, clockView24Skel)
+             sCacheKey = key
+diff --git a/packages/SystemUI/res/layout/combined_qs_header.xml b/packages/SystemUI/res/layout/combined_qs_header.xml
+index 3c5aac3f8b1c..59ef3543358c 100644
+--- a/packages/SystemUI/res/layout/combined_qs_header.xml
++++ b/packages/SystemUI/res/layout/combined_qs_header.xml
+@@ -90,6 +90,7 @@ frame when animating QS <-> QQS transition
+         android:transformPivotY="24dp"
+         android:scaleX="1"
+         android:scaleY="1"
++        app:amPmStyle="normal"
+     />
+ 
+     <com.android.systemui.statusbar.policy.VariableDateView
+diff --git a/packages/SystemUI/res/layout/status_bar.xml b/packages/SystemUI/res/layout/status_bar.xml
+index ebf066c13634..fdfd63985b3a 100644
+--- a/packages/SystemUI/res/layout/status_bar.xml
++++ b/packages/SystemUI/res/layout/status_bar.xml
+@@ -102,6 +102,7 @@
+                         android:paddingStart="@dimen/status_bar_left_clock_starting_padding"
+                         android:paddingEnd="@dimen/status_bar_left_clock_end_padding"
+                         android:gravity="center_vertical|start"
++                        systemui:amPmStyle="normal"
+                     />
+ 
+                     <include layout="@layout/ongoing_activity_chip_primary"
+diff --git a/packages/SystemUI/src/com/android/systemui/clock/ui/composable/Clock.kt b/packages/SystemUI/src/com/android/systemui/clock/ui/composable/Clock.kt
+index de35acd5d465..45b20571e13c 100644
+--- a/packages/SystemUI/src/com/android/systemui/clock/ui/composable/Clock.kt
++++ b/packages/SystemUI/src/com/android/systemui/clock/ui/composable/Clock.kt
+@@ -30,7 +30,7 @@ import com.android.systemui.lifecycle.rememberViewModel
+ fun Clock(
+     viewModelFactory: ClockViewModel.Factory,
+     modifier: Modifier = Modifier,
+-    amPmStyle: AmPmStyle = AmPmStyle.Gone,
++    amPmStyle: AmPmStyle = AmPmStyle.Shown,
+ ) {
+     val clockViewModel = rememberViewModel("Clock-viewModel") { viewModelFactory.create(amPmStyle) }
+     Text(
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/pipeline/shared/ui/composable/DesktopStatusBar.kt b/packages/SystemUI/src/com/android/systemui/statusbar/pipeline/shared/ui/composable/DesktopStatusBar.kt
+index 0ba64b6541e6..03202b61d815 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/pipeline/shared/ui/composable/DesktopStatusBar.kt
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/pipeline/shared/ui/composable/DesktopStatusBar.kt
+@@ -108,7 +108,7 @@ fun DesktopStatusBar(
+ 
+                 val clockViewModel =
+                     rememberViewModel("HomeStatusBar.Clock") {
+-                        clockViewModelFactory.create(AmPmStyle.Gone)
++                        clockViewModelFactory.create(AmPmStyle.Shown)
+                     }
+                 VariableDayDate(
+                     longerDateText = clockViewModel.longerDateText,
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/pipeline/shared/ui/composable/StatusBarRoot.kt b/packages/SystemUI/src/com/android/systemui/statusbar/pipeline/shared/ui/composable/StatusBarRoot.kt
+index 714620c4b858..aca16caa7d2c 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/pipeline/shared/ui/composable/StatusBarRoot.kt
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/pipeline/shared/ui/composable/StatusBarRoot.kt
+@@ -439,7 +439,7 @@ private fun addStartSideComposable(
+                 if (showDate) {
+                     val clockViewModel =
+                         rememberViewModel("HomeStatusBar.Clock") {
+-                            clockViewModelFactory.create(AmPmStyle.Gone)
++                            clockViewModelFactory.create(AmPmStyle.Shown)
+                         }
+                     VariableDayDate(
+                         longerDateText = clockViewModel.longerDateText,

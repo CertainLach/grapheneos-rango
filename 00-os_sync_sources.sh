@@ -13,7 +13,7 @@ pushd os-$OS_VER
 
 	repo init -u https://github.com/GrapheneOS/platform_manifest.git -b $OS_VER
 	repo forall -vc "git reset --hard"
-	repo sync -j8
+	repo sync -j8 --force-sync
 
 	set +u
 	source ./build/envsetup.sh

@@ -30,6 +30,21 @@ pushd os-$OS_VER
 	}
 	popd
 
+	echo "Applying OS patches"
+	pushd ./frameworks/base
+	{
+		test -d .git
+
+		git reset --hard HEAD
+		git clean -fd
+
+		for patch in ../../../patches/os/frameworks/base/*.patch; do
+			echo "Applying patch: $(basename "$patch")"
+			git apply "$patch"
+		done
+	}
+	popd
+
 	echo "Setting up env"
 	set +u
 	source ./build/envsetup.sh
