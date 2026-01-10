@@ -1,15 +1,14 @@
-From a3be7de41925d3ca843f473c478415213c2074e7 Mon Sep 17 00:00:00 2001
+From abb4764bea65ffd218f3e3362d00893faa1d57b2 Mon Sep 17 00:00:00 2001
 From: Lach <iam@lach.pw>
 Date: Fri, 28 Nov 2025 03:18:50 +0000
-Subject: [PATCH] kernelsu: add submodule, include kconfig
+Subject: [PATCH 1/4] kernelsu: add submodule, include kconfig
 
 Signed-off-by: Lach <iam@lach.pw>
 ---
  drivers/Kconfig  | 1 +
  drivers/Makefile | 2 ++
  drivers/kernelsu | 1 +
- 5 files changed, 8 insertions(+)
- create mode 100644 .gitmodules
+ 3 files changed, 4 insertions(+)
  create mode 120000 drivers/kernelsu
 
 diff --git a/drivers/Kconfig b/drivers/Kconfig
@@ -41,5 +40,5 @@ index 000000000000..b32a3654a683
 +../KernelSU-Next/kernel
 \ No newline at end of file
 -- 
-2.51.2
+2.52.0
 

@@ -1,0 +1,42 @@
+From 8a29c448ac8f90364523f611357df62368f09fd0 Mon Sep 17 00:00:00 2001
+From: Lach <iam@lach.pw>
+Date: Mon, 2 Feb 2026 15:49:12 +0100
+Subject: [PATCH 3/3] feat: allow setting DCL flag for system apps
+
+https://github.com/JingMatrix/LSPosed/discussions/340#discussioncomment-15249037
+Signed-off-by: Lach <iam@lach.pw>
+---
+ .../app/AswRestrictMemoryDynCodeLoading.java    | 17 -----------------
+ 1 file changed, 17 deletions(-)
+
+diff --git a/core/java/android/ext/settings/app/AswRestrictMemoryDynCodeLoading.java b/core/java/android/ext/settings/app/AswRestrictMemoryDynCodeLoading.java
+index 2dd6e8da635e..4360cf09f3a7 100644
+--- a/core/java/android/ext/settings/app/AswRestrictMemoryDynCodeLoading.java
++++ b/core/java/android/ext/settings/app/AswRestrictMemoryDynCodeLoading.java
+@@ -37,23 +37,6 @@ public class AswRestrictMemoryDynCodeLoading extends AppSwitch {
+     @Override
+     public Boolean getImmutableValue(Context ctx, int userId, ApplicationInfo appInfo,
+                                      GosPackageState ps, StateInfo si) {
+-        if (appInfo.isSystemApp()) {
+-            if (shouldAllowByDefaultToSystemPkg(ctx, appInfo.packageName)) {
+-                // allow manual restriction
+-                return null;
+-            }
+-            if (SELinuxFlags.isSystemAppSepolicyWeakeningAllowed()) {
+-                return null;
+-            }
+-            si.immutabilityReason = IR_IS_SYSTEM_APP;
+-            return true;
+-        }
+-
+-        if (ps.hasFlag(GosPackageStateFlag.ENABLE_EXPLOIT_PROTECTION_COMPAT_MODE)) {
+-            si.immutabilityReason = IR_EXPLOIT_PROTECTION_COMPAT_MODE;
+-            return false;
+-        }
+-
+         return null;
+     }
+ 
+-- 
+2.52.0
+

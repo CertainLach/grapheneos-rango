@@ -1,3 +1,13 @@
+From 36d7454e72872575f754f20119842bf21527370d Mon Sep 17 00:00:00 2001
+From: Lach <iam@lach.pw>
+Date: Mon, 2 Feb 2026 11:07:43 +0100
+Subject: [PATCH] feat: secure adbd in userdebug
+
+Signed-off-by: Lach <iam@lach.pw>
+---
+ scripts/gen_build_prop.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
 diff --git a/scripts/gen_build_prop.py b/scripts/gen_build_prop.py
 index 63287106c..7d4d4d612 100644
 --- a/scripts/gen_build_prop.py
@@ -13,3 +23,6 @@ index 63287106c..7d4d4d612 100644
        enable_target_debugging = False
        enable_dalvik_lock_contention_logging = False
      else:
+-- 
+2.52.0
+

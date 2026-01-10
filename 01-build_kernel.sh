@@ -8,16 +8,12 @@ BUILD_NUMBER_LAST=$(cat ".buildnumbers/kernel" 2>/dev/null || echo 0)
 export BUILD_NUMBER=$((BUILD_NUMBER_LAST + 1))
 echo "$BUILD_NUMBER" >".buildnumbers/kernel"
 
-PATCHES=$PWD/patches
-EXTRAS=$PWD/extras
-
 pushd "$EXTRAS/KernelSU-Next"
 {
 
 	# I haven't debugged why their git code doesn't work with kleaf.
 	# Doesn't matter, this thing ensures the values are correct before building the kernel.
 	KSU_GIT_VERSION=$(git rev-list --count HEAD)
-	KSU_GIT_TAG=$(git describe --tags --abbrev=0)
 
 	START="# PROVIDED VERSION START"
 	END="# PROVIDED VERSION END"
@@ -25,7 +21,7 @@ pushd "$EXTRAS/KernelSU-Next"
 	{
 		echo "$START"
 		echo "KSU_GIT_VERSION := $KSU_GIT_VERSION"
-		echo "KSU_GIT_TAG := $KSU_GIT_TAG"
+		echo "KSU_GIT_TAG := builtin"
 		echo "KSU_GIT_VERSION_VALID := 1"
 		echo "$END"
 		cat "kernel/Kbuild"
@@ -34,31 +30,23 @@ pushd "$EXTRAS/KernelSU-Next"
 }
 popd
 
+apply_patches kernel
+apply_patches kernel/aosp
+
 pushd kernel
 {
-
-	git reset --hard
-	git clean -fd
-	git apply "$PATCHES/kernel/"*.patch
+	rm -rf out
 
 	pushd aosp
 	{
 
-		git reset --hard
-		git clean -fd
-		rm -f drivers/kernelsu
-		git apply "$PATCHES/kernel/aosp/"*.patch
 		ln -sf "$EXTRAS/KernelSU-Next" ./
 		ln -sf "$EXTRAS/susfs4ksu" ./
-
-		cp susfs4ksu/kernel_patches/fs/* fs/
-		cp susfs4ksu/kernel_patches/include/linux/* include/linux/
-		patch -p1 < susfs4ksu/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch
 
 	}
 	popd
 
-	BUILD_AOSP_KERNEL=1 KLEAF_REPO_MANIFEST=aosp_manifest.xml "./build_$DEVICE.sh" --lto=full --repo_manifest="$PWD:$PWD/aosp_manifest.xml"
+	KLEAF_REPO_MANIFEST=aosp_manifest.xml "./build_$DEVICE.sh" --lto=full
 
 }
 popd

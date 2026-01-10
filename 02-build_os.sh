@@ -4,28 +4,11 @@ set -eux
 
 source .common.sh
 
-apply_patches() {
-	local repo_path="$1"
-	local patch_dir="$BASEDIR/patches/os/$repo_path"
+echo "Applying OS patches"
+apply_patches os/frameworks/base
+apply_patches os/build/soong
 
-	pushd "$repo_path"
-	{
-		test -d .git
-
-		git reset --hard HEAD
-		git clean -fd
-
-		for patch in "$patch_dir"/*.patch; do
-			if [ -f "$patch" ]; then
-				echo "Applying patch: $(basename "$patch")"
-				git apply "$patch"
-			fi
-		done
-	}
-	popd
-}
-
-pushd os-$OS_VER
+pushd os
 {
 
 	echo "Configuring OTA"
@@ -38,27 +21,19 @@ pushd os-$OS_VER
 	echo "Ensuring keys/releases are preserved between rebuilds (Those directories are stored outside of the VM)"
 	ln -sf ../keys ../releases ./
 
-	echo "Syncing built kernel"
-	test -d ./device/google/laguna-kernels/$KERNEL_VER
-	rsync ../kernel/out/$DEVICE/dist/ "./device/google/laguna-kernels/$KERNEL_VER/grapheneos/$DEVICE/" -arv --delete
-
-	echo "Ensuring no unnecessary files are present in kernel"
-	pushd ./device/google/laguna-kernels/$KERNEL_VER/grapheneos
+	echo "Reset kernel"
+	pushd ./device/google/laguna-kernels/$KERNEL_VER
 	{
-
-		git clean -f
-
+		git reset --hard graphene-base
+		git clean -fd
+		rsync "$BASEDIR/kernel/out/$DEVICE/dist/" "./grapheneos/$DEVICE/" -arv --delete
 	}
 	popd
-
-	echo "Applying OS patches"
-	apply_patches frameworks/base
-	apply_patches build/soong
 
 	echo "Setting up env"
 	set +u
 	source ./build/envsetup.sh
-	lunch "$DEVICE-cur-userdebug"
+	lunch "$DEVICE-cur-user"
 	set -u
 
 	echo "Building target"
@@ -77,17 +52,17 @@ pushd os-$OS_VER
 	if test -f ../.buildnumbers/os-$OS_VER-$DEVICE; then
 		echo "Generating incremental update"
 		PREV_BUILD_NUMBER=$(cat ../.buildnumbers/os-$OS_VER-$DEVICE)
-		"$BASEDIR/.with-passphrase.exp" script/generate-delta.sh $DEVICE "$PREV_BUILD_NUMBER" "$BUILD_NUMBER"
-
-		echo "Publishing incremental update"
-
-		pushd "releases/$BUILD_NUMBER/"
-		{
-
-			rsync -rv "$DEVICE-incremental-$PREV_BUILD_NUMBER-$BUILD_NUMBER.zip" karma:/var/lib/graphene-updates/
-
-		}
-		popd
+		# "$BASEDIR/.with-passphrase.exp" script/generate-delta.sh $DEVICE "$PREV_BUILD_NUMBER" "$BUILD_NUMBER"
+		#
+		# echo "Publishing incremental update"
+		#
+		# pushd "releases/$BUILD_NUMBER/"
+		# {
+		#
+		# 	rsync -rv "$DEVICE-incremental-$PREV_BUILD_NUMBER-$BUILD_NUMBER.zip" karma:/var/lib/graphene-updates/
+		#
+		# }
+		# popd
 	fi
 
 	pushd "releases/$BUILD_NUMBER/release-$DEVICE-$BUILD_NUMBER/"

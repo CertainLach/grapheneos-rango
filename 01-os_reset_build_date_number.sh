@@ -9,16 +9,16 @@ mkdir -p .buildnumbers
 BUILD_DATETIME=$(date -u +%s)
 BUILD_NUMBER_PARTIAL=$(date -u -d "@$BUILD_DATETIME" +%Y%m%d)
 INC_NUMBER_LAST=$(cat ".buildnumbers/os-last-$BUILD_NUMBER_PARTIAL" 2>/dev/null || echo 0)
-INC_NUMBER=$(printf "%02d" $((INC_NUMBER_LAST + 1)))
+INC_NUMBER=$(printf "%02d" $((10#$INC_NUMBER_LAST + 1)))
 echo "$INC_NUMBER" >".buildnumbers/os-last-$BUILD_NUMBER_PARTIAL"
 
 BUILD_NUMBER=${BUILD_NUMBER_PARTIAL}$INC_NUMBER
 
 mkdir -p kernel
 
-mkdir -p os-$OS_VER
+mkdir -p os
 
-pushd os-$OS_VER
+pushd os
 {
 
 	echo "Cleaning out directory for the new release"

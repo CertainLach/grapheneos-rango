@@ -1,0 +1,23 @@
+From c87f0ff12071534e72925ad0e72b18c74527a93a Mon Sep 17 00:00:00 2001
+From: Lach <iam@lach.pw>
+Date: Mon, 2 Feb 2026 12:59:41 +0100
+Subject: [PATCH] rango: kallsyms_all enable
+
+Signed-off-by: Lach <iam@lach.pw>
+---
+ private/devices/google/rango/rango_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/private/devices/google/rango/rango_defconfig b/private/devices/google/rango/rango_defconfig
+index 17387a21a..821062f39 100644
+--- a/private/devices/google/rango/rango_defconfig
++++ b/private/devices/google/rango/rango_defconfig
+@@ -15,4 +15,5 @@ CONFIG_LINK_DEVICE_PCIE_SOC_GOOGLE=y
+ CONFIG_MODEM_IF_QOS=m
+ CONFIG_SEC_MODEM_S5100=m
+ CONFIG_SHM_IPC=m
+ CONFIG_INPUT_POWER_KEYDEBUG=m
++CONFIG_KALLSYMS_ALL=y
+-- 
+2.52.0
+

@@ -4,9 +4,9 @@ set -eux
 
 source .common.sh
 
-mkdir -p os-$OS_VER
+mkdir -p os
 
-pushd os-$OS_VER
+pushd os
 {
 
 	# TODO: Also support for stable releases with signature verification
@@ -14,6 +14,7 @@ pushd os-$OS_VER
 	repo init -u https://github.com/GrapheneOS/platform_manifest.git -b $OS_VER
 	repo forall -vc "git reset --hard"
 	repo sync -j8 --force-sync
+	repo forall -vc "git tag --no-sign -f graphene-base"
 
 	set +u
 	source ./build/envsetup.sh

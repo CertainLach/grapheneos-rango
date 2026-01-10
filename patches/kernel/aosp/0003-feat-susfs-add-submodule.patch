@@ -1,0 +1,42 @@
+From 0163049ca7e220fa44590ac495aacd6e08ee67c9 Mon Sep 17 00:00:00 2001
+From: Lach <iam@lach.pw>
+Date: Mon, 2 Feb 2026 10:46:23 +0100
+Subject: [PATCH 3/4] feat(susfs): add submodule
+
+Signed-off-by: Lach <iam@lach.pw>
+---
+ fs/susfs.c                | 1 +
+ include/linux/susfs.h     | 1 +
+ include/linux/susfs_def.h | 1 +
+ 3 files changed, 3 insertions(+)
+ create mode 120000 fs/susfs.c
+ create mode 120000 include/linux/susfs.h
+ create mode 120000 include/linux/susfs_def.h
+
+diff --git a/fs/susfs.c b/fs/susfs.c
+new file mode 120000
+index 000000000000..b3ae2f84f475
+--- /dev/null
++++ b/fs/susfs.c
+@@ -0,0 +1 @@
++../susfs4ksu/kernel_patches/fs/susfs.c
+\ No newline at end of file
+diff --git a/include/linux/susfs.h b/include/linux/susfs.h
+new file mode 120000
+index 000000000000..e15b98b5840d
+--- /dev/null
++++ b/include/linux/susfs.h
+@@ -0,0 +1 @@
++../../susfs4ksu/kernel_patches/include/linux/susfs.h
+\ No newline at end of file
+diff --git a/include/linux/susfs_def.h b/include/linux/susfs_def.h
+new file mode 120000
+index 000000000000..dcd7d482fa5f
+--- /dev/null
++++ b/include/linux/susfs_def.h
+@@ -0,0 +1 @@
++../../susfs4ksu/kernel_patches/include/linux/susfs_def.h
+\ No newline at end of file
+-- 
+2.52.0
+

@@ -1,3 +1,15 @@
+From 9096b2d7577a26c8bc0a62bfa32da507f891f795 Mon Sep 17 00:00:00 2001
+From: Lach <iam@lach.pw>
+Date: Mon, 2 Feb 2026 11:05:53 +0100
+Subject: [PATCH 2/3] feat: disable flag secure enforcement
+
+Signed-off-by: Lach <iam@lach.pw>
+---
+ .../android/window/ScreenCaptureInternal.java   |  2 +-
+ .../com/android/server/wm/ActivityRecord.java   | 12 +-----------
+ .../java/com/android/server/wm/WindowState.java | 17 ++---------------
+ 3 files changed, 4 insertions(+), 27 deletions(-)
+
 diff --git a/core/java/android/window/ScreenCaptureInternal.java b/core/java/android/window/ScreenCaptureInternal.java
 index f8b74bba34c8..3972d20d6d7a 100644
 --- a/core/java/android/window/ScreenCaptureInternal.java
@@ -62,3 +74,6 @@ index 2f25587ee91f..57a093c549f0 100644
      }
  
      /**
+-- 
+2.52.0
+
