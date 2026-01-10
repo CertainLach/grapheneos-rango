@@ -39,3 +39,7 @@ To build the system, they all should be ran sequentially, but some steps might b
 All the scripts are being run in distrobox, because I don't want any primary system changes to affect that, and it is not really feasible to use docker directly for that (I don't want to install build dependencies in docker container).
 
 The factory images are not published anywhere right now, they are too large for my needs.
+
+=== LLM Usage
+
+12h patch was partially updated by LLM, as I was unable to discover how fullscreen (2 line) display of it works on my own.
