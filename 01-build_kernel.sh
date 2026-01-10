@@ -38,14 +38,15 @@ pushd kernel
 {
 
 	git reset --hard
-	git clean -f
+	git clean -fd
 	git apply "$PATCHES/kernel/"*.patch
 
 	pushd aosp
 	{
 
 		git reset --hard
-		git clean -f
+		git clean -fd
+		rm -f drivers/kernelsu
 		git apply "$PATCHES/kernel/aosp/"*.patch
 		ln -sf "$EXTRAS/KernelSU-Next" ./
 		ln -sf "$EXTRAS/susfs4ksu" ./
