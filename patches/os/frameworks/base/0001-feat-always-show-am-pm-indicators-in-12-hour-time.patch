@@ -1,5 +1,60 @@
+diff --git a/packages/SystemUI/customization/clocks/common/src/com/android/systemui/customization/clocks/DigitalTimespec.kt b/packages/SystemUI/customization/clocks/common/src/com/android/systemui/customization/clocks/DigitalTimespec.kt
+index 68b1c8bdb115..36b5ff84162d 100644
+--- a/packages/SystemUI/customization/clocks/common/src/com/android/systemui/customization/clocks/DigitalTimespec.kt
++++ b/packages/SystemUI/customization/clocks/common/src/com/android/systemui/customization/clocks/DigitalTimespec.kt
+@@ -18,11 +18,14 @@ package com.android.systemui.customization.clocks
+ 
+ import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds
+ 
+-enum class DigitalTimespec(private val hourViewId: Int, private val minuteViewId: Int) {
+-    TIME_FULL_FORMAT(ClockViewIds.TIME_FULL_FORMAT, ClockViewIds.TIME_FULL_FORMAT),
+-    DIGIT_PAIR(ClockViewIds.HOUR_DIGIT_PAIR, ClockViewIds.MINUTE_DIGIT_PAIR),
+-    FIRST_DIGIT(ClockViewIds.HOUR_FIRST_DIGIT, ClockViewIds.MINUTE_FIRST_DIGIT),
+-    SECOND_DIGIT(ClockViewIds.HOUR_SECOND_DIGIT, ClockViewIds.MINUTE_SECOND_DIGIT);
++enum class DigitalTimespec(private val hourViewId: Int, private val minuteViewId: Int, private val amPmViewId: Int) {
++    TIME_FULL_FORMAT(ClockViewIds.TIME_FULL_FORMAT, ClockViewIds.TIME_FULL_FORMAT, ClockViewIds.TIME_FULL_FORMAT),
++    DIGIT_PAIR(ClockViewIds.HOUR_DIGIT_PAIR, ClockViewIds.MINUTE_DIGIT_PAIR, ClockViewIds.TIME_FULL_FORMAT),
++    FIRST_DIGIT(ClockViewIds.HOUR_FIRST_DIGIT, ClockViewIds.MINUTE_FIRST_DIGIT, ClockViewIds.AM_PM_FIRST_DIGIT),
++    SECOND_DIGIT(ClockViewIds.HOUR_SECOND_DIGIT, ClockViewIds.MINUTE_SECOND_DIGIT, ClockViewIds.AM_PM_SECOND_DIGIT);
+ 
+-    fun getViewId(isHour: Boolean): Int = if (isHour) hourViewId else minuteViewId
++    fun getViewId(isHour: Boolean, isAmPm: Boolean = false): Int =
++        if (isAmPm) amPmViewId
++        else if (isHour) hourViewId
++        else minuteViewId
+ }
+diff --git a/packages/SystemUI/customization/clocks/common/src/com/android/systemui/customization/clocks/TimespecHandler.kt b/packages/SystemUI/customization/clocks/common/src/com/android/systemui/customization/clocks/TimespecHandler.kt
+index 1e5e03746950..7e37f94e98ad 100644
+--- a/packages/SystemUI/customization/clocks/common/src/com/android/systemui/customization/clocks/TimespecHandler.kt
++++ b/packages/SystemUI/customization/clocks/common/src/com/android/systemui/customization/clocks/TimespecHandler.kt
+@@ -151,7 +151,11 @@ class DigitalTimeFormatter(
+ }
+ 
+ class DigitalTimespecHandler(val timespec: DigitalTimespec, val formatter: DigitalTimeFormatter) {
+-    fun getViewId(): Int = timespec.getViewId("h" in formatter.pattern)
++    fun getViewId(): Int {
++        val isAmPm = "a" in formatter.pattern && "h" !in formatter.pattern && "H" !in formatter.pattern
++        val isHour = "h" in formatter.pattern
++        return timespec.getViewId(isHour, isAmPm)
++    }
+ 
+     fun getText(): String {
+         val text = formatter.getText()
+diff --git a/packages/SystemUI/customization/res/values/donottranslate.xml b/packages/SystemUI/customization/res/values/donottranslate.xml
+index 383d5521f156..196cf2655bb3 100644
+--- a/packages/SystemUI/customization/res/values/donottranslate.xml
++++ b/packages/SystemUI/customization/res/values/donottranslate.xml
+@@ -16,7 +16,7 @@
+ 
+ <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+     <!-- Skeleton string format for displaying the time in 12-hour format. -->
+-    <string name="clock_12hr_format">hm</string>
++    <string name="clock_12hr_format">hma</string>
+ 
+     <!-- Skeleton string format for displaying the time in 24-hour format. -->
+     <string name="clock_24hr_format">Hm</string>
 diff --git a/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/AnimatableClockView.kt b/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/AnimatableClockView.kt
-index f668b2486a5c..d447d2a4820b 100644
+index f668b2486a5c..2fa672be8870 100644
 --- a/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/AnimatableClockView.kt
 +++ b/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/AnimatableClockView.kt
 @@ -628,14 +628,7 @@ constructor(
@@ -14,10 +69,113 @@ index f668b2486a5c..d447d2a4820b 100644
 -                        it.replace("a".toRegex(), "").trim { it <= ' ' }
 -                    } else it
 -                }
-+            sClockView12 = DateFormat.getBestDateTimePattern(locale, clockView12Skel)
++            sClockView12 = "h:mm a"
  
              sClockView24 = DateFormat.getBestDateTimePattern(locale, clockView24Skel)
              sCacheKey = key
+@@ -647,7 +640,7 @@ constructor(
+         private val DEFAULT_LOGGER = ClockLogger(null, LogcatOnlyMessageBuffer(LogLevel.DEBUG), TAG)
+ 
+         const val ANIMATION_DURATION_FOLD_TO_AOD: Int = 600
+-        private const val DOUBLE_LINE_FORMAT_12_HOUR = "hh\nmm"
++        private const val DOUBLE_LINE_FORMAT_12_HOUR = "hh\nmma"
+         private const val DOUBLE_LINE_FORMAT_24_HOUR = "HH\nmm"
+         private const val DOZE_ANIM_DURATION: Long = 300
+         private const val APPEAR_ANIM_DURATION: Long = 833
+diff --git a/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/FlexClockFaceController.kt b/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/FlexClockFaceController.kt
+index cd4482306f6f..5fe008ac7128 100644
+--- a/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/FlexClockFaceController.kt
++++ b/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/FlexClockFaceController.kt
+@@ -92,7 +92,7 @@ class FlexClockFaceController(
+     private val keyguardLargeClockTopMargin =
+         clockCtx.resources.getDimensionPixelSize(R.dimen.keyguard_large_clock_top_margin)
+     private val timeFormatter =
+-        DigitalTimeFormatter("h:mm", clockCtx.timeKeeper, enableContentDescription = true)
++        DigitalTimeFormatter("h:mm a", clockCtx.timeKeeper, enableContentDescription = true)
+     val layerController: FlexClockViewController
+ 
+     init {
+diff --git a/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/FlexClockViewGroupController.kt b/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/FlexClockViewGroupController.kt
+index ddc589102ed6..2e09e6a3c2fe 100644
+--- a/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/FlexClockViewGroupController.kt
++++ b/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/FlexClockViewGroupController.kt
+@@ -98,6 +98,18 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
+                 )
+             )
+         }
++
++        DigitalTimeFormatter("a", clockCtx.timeKeeper).also { timeFormatter ->
++            createController(
++                layerCfg.copy(timespec = DigitalTimespec.FIRST_DIGIT, timeFormatter = timeFormatter)
++            )
++            createController(
++                layerCfg.copy(
++                    timespec = DigitalTimespec.SECOND_DIGIT,
++                    timeFormatter = timeFormatter,
++                )
++            )
++        }
+     }
+ 
+     private fun refreshTime() {
+diff --git a/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/view/FlexClockViewGroup.kt b/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/view/FlexClockViewGroup.kt
+index 12dfee0885dc..e1d2ff22081a 100644
+--- a/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/view/FlexClockViewGroup.kt
++++ b/packages/SystemUI/customization/src/com/android/systemui/shared/clocks/view/FlexClockViewGroup.kt
+@@ -136,7 +136,10 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
+ 
+         val xScale = if (childViews.size < 4) 1f else 2f
+         val yBuffer = context.resources.getDimensionPixelSize(R.dimen.clock_vertical_digit_buffer)
+-        return (maxChildSize + aodTranslate.abs()) * VPointF(xScale, 2f) + VPointF(0f, yBuffer)
++        // Check if we have AM/PM views to determine if we need 3 rows
++        val hasAmPm = childViews.any { it.id == ClockViewIds.AM_PM_FIRST_DIGIT || it.id == ClockViewIds.AM_PM_SECOND_DIGIT }
++        val yScale = if (hasAmPm) 3f else 2f
++        return (maxChildSize + aodTranslate.abs()) * VPointF(xScale, yScale) + VPointF(0f, yBuffer * (yScale - 1))
+     }
+ 
+     override fun onViewAdded(child: View?) {
+@@ -216,6 +219,9 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
+                         ClockViewIds.HOUR_SECOND_DIGIT,
+                         ClockViewIds.MINUTE_FIRST_DIGIT,
+                         ClockViewIds.MINUTE_SECOND_DIGIT -> child.maxSize * 2f
++                        // AM/PM views are duplicated in both directions but in a 3-row layout
++                        ClockViewIds.AM_PM_FIRST_DIGIT,
++                        ClockViewIds.AM_PM_SECOND_DIGIT -> child.maxSize * VPointF(2f, 3f)
+                         // Other clock view ids are not valid children
+                         else -> VPointF(-1)
+                     },
+@@ -269,6 +275,9 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
+                         ClockViewIds.MINUTE_DIGIT_PAIR -> VPointF(0f, y + yBuffer)
+                         ClockViewIds.MINUTE_FIRST_DIGIT -> VPointF(0f, y + yBuffer)
+                         ClockViewIds.MINUTE_SECOND_DIGIT -> VPointF(x, y + yBuffer)
++                        // Add AM/PM in third row
++                        ClockViewIds.AM_PM_FIRST_DIGIT -> VPointF(0f, 2 * (y + yBuffer))
++                        ClockViewIds.AM_PM_SECOND_DIGIT -> VPointF(x, 2 * (y + yBuffer))
+                         else -> VPointF.ZERO
+                     }
+                 }
+@@ -497,6 +506,8 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
+                     ClockViewIds.HOUR_SECOND_DIGIT -> VPointF(1, -1)
+                     ClockViewIds.MINUTE_FIRST_DIGIT -> VPointF(-1, 1)
+                     ClockViewIds.MINUTE_SECOND_DIGIT -> VPointF(1, 1)
++                    ClockViewIds.AM_PM_FIRST_DIGIT -> VPointF(-1, 1)
++                    ClockViewIds.AM_PM_SECOND_DIGIT -> VPointF(1, 1)
+                     ClockViewIds.HOUR_DIGIT_PAIR -> VPointF(-1, -1)
+                     ClockViewIds.MINUTE_DIGIT_PAIR -> VPointF(-1, 1)
+                     else -> VPointF(1, 1)
+diff --git a/packages/SystemUI/plugin/src/com/android/systemui/plugins/keyguard/ui/clocks/ClockViewIds.kt b/packages/SystemUI/plugin/src/com/android/systemui/plugins/keyguard/ui/clocks/ClockViewIds.kt
+index ef34c6d6e225..fa8e2c68030a 100644
+--- a/packages/SystemUI/plugin/src/com/android/systemui/plugins/keyguard/ui/clocks/ClockViewIds.kt
++++ b/packages/SystemUI/plugin/src/com/android/systemui/plugins/keyguard/ui/clocks/ClockViewIds.kt
+@@ -36,6 +36,8 @@ object ClockViewIds {
+     val HOUR_SECOND_DIGIT = View.generateViewId()
+     val MINUTE_FIRST_DIGIT = View.generateViewId()
+     val MINUTE_SECOND_DIGIT = View.generateViewId()
++    val AM_PM_FIRST_DIGIT = View.generateViewId()
++    val AM_PM_SECOND_DIGIT = View.generateViewId()
+     val TIME_FULL_FORMAT = View.generateViewId()
+     val DATE_FORMAT = View.generateViewId()
+ 
 diff --git a/packages/SystemUI/res/layout/combined_qs_header.xml b/packages/SystemUI/res/layout/combined_qs_header.xml
 index 3c5aac3f8b1c..59ef3543358c 100644
 --- a/packages/SystemUI/res/layout/combined_qs_header.xml
