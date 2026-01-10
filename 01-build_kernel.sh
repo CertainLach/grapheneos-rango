@@ -51,6 +51,10 @@ pushd kernel
 		ln -sf "$EXTRAS/KernelSU-Next" ./
 		ln -sf "$EXTRAS/susfs4ksu" ./
 
+		cp susfs4ksu/kernel_patches/fs/* fs/
+		cp susfs4ksu/kernel_patches/include/linux/* include/linux/
+		patch -p1 < susfs4ksu/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch
+
 	}
 	popd
 
