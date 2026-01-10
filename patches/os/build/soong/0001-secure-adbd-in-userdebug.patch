@@ -1,0 +1,15 @@
+diff --git a/scripts/gen_build_prop.py b/scripts/gen_build_prop.py
+index 63287106c..7d4d4d612 100644
+--- a/scripts/gen_build_prop.py
++++ b/scripts/gen_build_prop.py
+@@ -320,9 +320,9 @@ def append_additional_system_props(args):
+     props.append("ro.secure=1")
+     props.append("security.perf_harden=1")
+ 
++    props.append("ro.adb.secure=1")
+     if config["BuildVariant"] == "user":
+       # Disable debugging in plain user builds.
+-      props.append("ro.adb.secure=1")
+       enable_target_debugging = False
+       enable_dalvik_lock_contention_logging = False
+     else:

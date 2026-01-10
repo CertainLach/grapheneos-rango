@@ -4,6 +4,27 @@ set -eux
 
 source .common.sh
 
+apply_patches() {
+	local repo_path="$1"
+	local patch_dir="$BASEDIR/patches/os/$repo_path"
+
+	pushd "$repo_path"
+	{
+		test -d .git
+
+		git reset --hard HEAD
+		git clean -fd
+
+		for patch in "$patch_dir"/*.patch; do
+			if [ -f "$patch" ]; then
+				echo "Applying patch: $(basename "$patch")"
+				git apply "$patch"
+			fi
+		done
+	}
+	popd
+}
+
 pushd os-$OS_VER
 {
 
@@ -31,24 +52,13 @@ pushd os-$OS_VER
 	popd
 
 	echo "Applying OS patches"
-	pushd ./frameworks/base
-	{
-		test -d .git
-
-		git reset --hard HEAD
-		git clean -fd
-
-		for patch in ../../../patches/os/frameworks/base/*.patch; do
-			echo "Applying patch: $(basename "$patch")"
-			git apply "$patch"
-		done
-	}
-	popd
+	apply_patches frameworks/base
+	apply_patches build/soong
 
 	echo "Setting up env"
 	set +u
 	source ./build/envsetup.sh
-	lunch "$DEVICE-cur-user"
+	lunch "$DEVICE-cur-userdebug"
 	set -u
 
 	echo "Building target"
