@@ -1,0 +1,64 @@
+diff --git a/core/java/android/window/ScreenCaptureInternal.java b/core/java/android/window/ScreenCaptureInternal.java
+index f8b74bba34c8..3972d20d6d7a 100644
+--- a/core/java/android/window/ScreenCaptureInternal.java
++++ b/core/java/android/window/ScreenCaptureInternal.java
+@@ -417,7 +417,7 @@ public class ScreenCaptureInternal {
+             private final Rect mSourceCrop = new Rect();
+             private float mFrameScaleX = 1;
+             private float mFrameScaleY = 1;
+-            private @SecureContentPolicy int mSecureContentPolicy;
++            private @SecureContentPolicy int mSecureContentPolicy = ScreenCapture.ScreenCaptureParams.SECURE_CONTENT_POLICY_CAPTURE;
+             private @ProtectedContentPolicy int mProtectedContentPolicy;
+             private @CaptureMode int mCaptureMode;
+             private long mUid = -1;
+diff --git a/services/core/java/com/android/server/wm/ActivityRecord.java b/services/core/java/com/android/server/wm/ActivityRecord.java
+index a320ea73aed4..1216d4bc2a89 100644
+--- a/services/core/java/com/android/server/wm/ActivityRecord.java
++++ b/services/core/java/com/android/server/wm/ActivityRecord.java
+@@ -6938,17 +6938,7 @@ final class ActivityRecord extends WindowToken {
+     }
+ 
+     void reportScreenCaptured() {
+-        if (mCaptureCallbacks != null) {
+-            final int n = mCaptureCallbacks.beginBroadcast();
+-            for (int i = 0; i < n; i++) {
+-                IScreenCaptureObserver obs = mCaptureCallbacks.getBroadcastItem(i);
+-                try {
+-                    obs.onScreenCaptured();
+-                } catch (RemoteException e) {
+-                }
+-            }
+-            mCaptureCallbacks.finishBroadcast();
+-        }
++        // Screen capture detection disabled - do not notify apps
+     }
+ 
+     void registerCaptureObserver(IScreenCaptureObserver observer) {
+diff --git a/services/core/java/com/android/server/wm/WindowState.java b/services/core/java/com/android/server/wm/WindowState.java
+index 2f25587ee91f..57a093c549f0 100644
+--- a/services/core/java/com/android/server/wm/WindowState.java
++++ b/services/core/java/com/android/server/wm/WindowState.java
+@@ -1872,21 +1872,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
+     }
+ 
+     boolean isSecureLocked() {
+-        if (mWmService.getDisableSecureWindows()) {
+-            return false;
+-        }
+-
+-        if ((mAttrs.flags & WindowManager.LayoutParams.FLAG_SECURE) != 0) {
+-            return true;
+-        }
+-
+-        // block screen capture to protect sensitive notifications or content on the screen.
+-        if (mWmService.mSensitiveContentPackages.shouldBlockScreenCaptureForApp(
+-                getOwningPackage(), getOwningUid(), getWindowToken())) {
+-            return true;
+-        }
+-
+-        return !DevicePolicyCache.getInstance().isScreenCaptureAllowed(mShowUserId);
++        // Always allow screenshots - FLAG_SECURE is disabled
++        return false;
+     }
+ 
+     /**
