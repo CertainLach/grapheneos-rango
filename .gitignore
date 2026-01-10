@@ -1,5 +1,6 @@
-/os-*
+/os
 /kernel
 /releases
 /.direnv
 /.env
+/.buildnumbers
