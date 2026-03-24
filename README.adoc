@@ -5,17 +5,14 @@ This is a GrapheneOS build script with patches that are important for me.
 Those patches only include KernelSU-Next/susfs for now, I need them to run my own
 nix-on-magisk (nixisk) module and couple of other modules, e.g NFS and Netbird with kernel wireguard.
 
-Edit: I dropped susfs, because I don't need it.
-
 I do not consider KernelSU a security threat, as it is still more secure than old su implementations,
 and I use AVB to protect myself from other threats. I don't, however, consider it a hard requirement,
 if I manage to integrate nix package manager itself in grapheneos/develop a more lightweight solution
 for this task, I might instead just enable root in adb and replace KernelSU with a couple of system
 services.
 
-This source code tree contains everything I need for the build, with the exception that kernel
-tree is currently using a forked kernel instead of applying patches during build. Keys are stored
-here too, but they are encrypted using long password. If you want to build your own system based on
+This source code tree contains everything I need for the build.
+Keys are stored here too, but they are encrypted using long password. If you want to build your own system based on
 this source code tree - consider regenerating them, I don't want to maintain a set of public keys.
 
 The current CI infrastructure is just one machine that runs all the scripts here, pushing the finished
@@ -29,8 +26,8 @@ images to machine which distributes the build images to private CDN. The directo
 === Scripts
 
 00-os_sync_sources.sh:: Fetch the grapheneos platform manifest and all the repositories, update vendor images from google
-00-kernel_sync_sources.sh:: Non-existant, TODO
-01-build_kernel.sh:: Build the pixel kernel
+00-kernel_sync_sources.sh:: Fetch the updated kernel
+01-build_kernel.sh:: Apply patches and build the pixel kernel
 01-os_reset_build_date_number.sh:: Up the version numbers, ensure that there is no stale build artifacts for the system (Those should never exist in CI, but I might have them for development builds)
 02-build_os.sh:: Ensure system patches are applied, copy kernel build artifacts, build the system OTA and optionally the incremental updates, upload them to the releases server.
 
